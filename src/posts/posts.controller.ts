@@ -1,15 +1,19 @@
-import { Body, Controller, Get, Param, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, HttpCode, Param, Patch, Post, Query } from '@nestjs/common';
 import { PostsService } from './posts.service';
-import { Post as PostModel } from './posts.model';
+import { Post as PostModel, PostStatus } from './posts.model';
 import { CreatePostDto } from './dto/createPost.dto';
+import { FilterPostDto } from './dto/filterPost.dto';
 
 @Controller('posts')
 export class PostsController {
   constructor(private postsService: PostsService) { }
 
   @Get()
-  getAllPosts(): PostModel[] {
-    return this.postsService.getAllPosts()
+  getPosts(@Query() query: FilterPostDto): PostModel[] {
+    if (Object.keys(query).length > 0) {
+      return this.postsService.getPostsFilter(query)
+    }
+    return this.postsService.getPosts()
   }
 
   @Get('/:id')
@@ -20,5 +24,15 @@ export class PostsController {
   @Post()
   createPost(@Body() post: CreatePostDto): PostModel {
     return this.postsService.createPost(post)
+  }
+
+  @Patch('/:id')
+  updatePost(@Param('id') id: string, @Body('status') status: PostStatus): PostModel {
+    return this.postsService.updatePost(id, status)
+  }
+
+  @Delete('/:id')
+  deletePost(@Param('id') id: string): PostModel {
+    return this.postsService.deletePost(id)
   }
 }
